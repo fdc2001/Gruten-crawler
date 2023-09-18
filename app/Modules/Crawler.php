@@ -51,8 +51,8 @@ class Crawler
     {
         \Spatie\Crawler\Crawler::create([
             RequestOptions::ALLOW_REDIRECTS => true,
-            RequestOptions::TIMEOUT => 60,
-            RequestOptions::DELAY => 3000,
+            RequestOptions::TIMEOUT => 120,
+            RequestOptions::DELAY => 1000,
             //RequestOptions::PROXY => $this->getProxyServer(),
         ])
             ->acceptNofollowLinks()
