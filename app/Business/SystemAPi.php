@@ -17,6 +17,8 @@ class SystemAPi
 
     public static function storeProduct($product)
     {
+        $product = self::fixEncode($product);
+        //dd(json_encode($product));
         $domain = config('system.domain');
         $request = Http::post($domain . self::$path . '/product', $product);
         return $request->json();
@@ -33,5 +35,17 @@ class SystemAPi
             'file' => $e->getFile(),
         ]);
         return $request->json();
+    }
+
+    public static function fixEncode(array $data)
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = self::fixEncode($value);
+            } else {
+                $data[$key] = utf8_encode($value);
+            }
+        }
+        return $data;
     }
 }

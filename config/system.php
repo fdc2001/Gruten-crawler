@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'domain' => env('SYSTEM_DOMAIN', 'https://localhost'),
+    'domain' => env('SYSTEM_DOMAIN', 'http://glutenapp.pt'),
 ];

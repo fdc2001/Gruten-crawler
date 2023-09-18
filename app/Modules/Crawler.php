@@ -3,6 +3,7 @@
 namespace App\Modules;
 
 use App\Business\SystemAPi;
+use App\Modules\Crawlers\Stores\AuchanDriver;
 use App\Modules\Crawlers\Stores\ContinenteDriver;
 use GuzzleHttp\RequestOptions;
 use Spatie\Crawler\CrawlProfiles\CrawlInternalUrls;
@@ -26,7 +27,7 @@ class Crawler
 
     private function getProxyServer(){
         $servers = [
-            '144.64.0.35:8080',
+            //'144.64.0.35:8080',
 
         ];
 
@@ -39,6 +40,9 @@ class Crawler
             case 'Continente':
                 $this->driver = ContinenteDriver::class;
                 break;
+            case 'Auchan':
+                $this->driver = AuchanDriver::class;
+                break;
         }
         $this->runCrawler($store);
     }
@@ -48,16 +52,15 @@ class Crawler
         \Spatie\Crawler\Crawler::create([
             RequestOptions::ALLOW_REDIRECTS => true,
             RequestOptions::TIMEOUT => 120,
-            RequestOptions::DELAY => 1000,
-            RequestOptions::PROXY => $this->getProxyServer(),
+            RequestOptions::DELAY => 3000,
+            //RequestOptions::PROXY => $this->getProxyServer(),
         ])
             ->acceptNofollowLinks()
             ->respectRobots()
-            ->executeJavaScript()
-            ->setConcurrency(2)
+            ->setConcurrency(1)
             ->setCrawlObserver(new $this->driver)
             ->setCrawlProfile(new CrawlInternalUrls($store['url']))
-            ->setTotalCrawlLimit(10000)
+            //->setTotalCrawlLimit(10000)
             ->startCrawling($store['url']);
 
         return true;

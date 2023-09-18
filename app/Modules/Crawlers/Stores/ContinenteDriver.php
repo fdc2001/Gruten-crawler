@@ -48,8 +48,11 @@ class ContinenteDriver extends CrawlObserver
             }
 
             $categoryElement = $xpath->query('//*[@id="maincontent"]/div/div/div[1]/div/div/div/div/ul/li[7]/a/span');
-            $lastCategory = $this->clearString($categoryElement->item(0)->nodeValue);
-
+            if ($categoryElement->item(0)!=null){
+                $lastCategory = $this->clearString($categoryElement->item(0)->nodeValue);
+            }else{
+                $lastCategory = $secondCategory;
+            }
             if (ExcludeCategory::check($lastCategory)) {
                 dump('Category excluded');
                 return;
@@ -63,24 +66,33 @@ class ContinenteDriver extends CrawlObserver
 
             $detailsElements = $xpath->query('//a[@data-url]/@data-url');
             $detailsString = $detailsElements->item(0)->nodeValue;
+            $images = [];
+            $imageElement = $xpath->query('//*[@class="pdp-images-carousel pdp-img-container hidden-before-init"]/div/img/@data-src');
 
-            $imageElement = $xpath->query('//*[@id="slick-slide00"]/img');
             if ($imageElement->item(0)!=null){
-                $image = $imageElement->item(0)->getAttribute('src');
+                foreach ($imageElement as $image){
+                    $images[] = $image->nodeValue;
+                }
             }else{
-                $imageElement = $xpath->query('//*[@id="maincontent"]/div/div/div[2]/div[1]/div/div[1]/div/img');
-                $image = $imageElement->item(0)->getAttribute('src');
+                $imageElement = $xpath->query('//*[@id="maincontent"]/div/div/div[2]/div[1]/div/div[*]/div/img');
+                $images[] = $imageElement->item(0)->getAttribute('src');
             }
 
             parse_str($detailsString, $params);
             $eanCode = $params['ean'];
 
+            $ingredientsElement = $xpath->query('//*[@id="collapsible-description-1"]');
+            if ($ingredientsElement->item(0)==null){
+                $ingredientsElement = $xpath->query('//*[@id="collapsible-description-nutri"]');
 
-            $LegalInformationElement = $xpath->query('//*[@id="collapsible-description-nutri"]');
-            if ($LegalInformationElement->item(0)==null){
-                $LegalInformationElement = $xpath->query('//*[@id="collapsible-description-3"]');
+                if ($ingredientsElement->item(0)==null){
+                    $ingredientsElement = $xpath->query('//*[@id="collapsible-description-3"]');
+                }
             }
-            $LegalInformation = $LegalInformationElement->item(0)->nodeValue;
+
+
+            $LegalInformation = $ingredientsElement->item(0)->nodeValue;
+
             $LegalInformation = $this->removeJsChars(utf8_decode($LegalInformation));
 
             SystemAPi::storeProduct([
@@ -89,7 +101,7 @@ class ContinenteDriver extends CrawlObserver
                 'ean' => $eanCode,
                 'main_category' => $firstCategory,
                 'sub_category' => $secondCategory,
-                'image' => $image,
+                'images' => $images,
                 'url' => $url->getScheme() . '://' . $url->getHost() . $url->getPath(),
                 'information' => $LegalInformation,
                 'store' => $this->store,
