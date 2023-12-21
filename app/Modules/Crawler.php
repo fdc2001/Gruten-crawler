@@ -13,9 +13,15 @@ class Crawler
     private array $stores;
     private string $driver;
 
-    public function __construct()
+    public function __construct($storeParam= null)
     {
-        $this->stores = SystemAPi::stores();
+        $stores = SystemAPi::stores();
+        if ($storeParam != null){
+            $stores = array_filter($stores, function ($store) use ($storeParam) {
+                return $store['name'] == $storeParam;
+            });
+        }
+        $this->stores = $stores;
     }
 
     public function run()
